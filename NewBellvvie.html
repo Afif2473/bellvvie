@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Linear System Calculator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-image:url("pic1.jpg");
+            background-repeat: no-repeat;
+            background-size :cover;
+        }
+        
+        
+        h1 {
+            color: #e91e63;
+            margin-top: 50px;
+            text-align: center;
+        }
+        
+        .container {
+            margin: 50px auto;
+            width: 400px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn {
+            display: block;
+            width: 100%;
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 16px;
+            background-color: #e91e63;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .btn:hover {
+            background-color: #d81b60;
+        }
+        
+        .output {
+            margin-top: 30px;
+            padding: 10px;
+            background-color: #f8bbd0;
+            border-radius: 5px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        
+        .output h2 {
+            color: #e91e63;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .output p {
+            margin: 0;
+            padding: 5px 0;
+            color: #555;
+        }
+        
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            padding-top: 30px;
+            height: 0;
+            overflow: hidden;
+        }
+        
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .tutorial-link a {
+            display: inline-block;
+            color: #e91e63;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+<body>
+    <h1>⋆˚✿˖° Linear System Calculator ⋆˚✿˖° </h1>
+    <div class="container">
+        <button class="btn" onclick="performGaussianElimination()">Gaussian Elimination</button>
+        <button class="btn" onclick="performMatrixInverse()">Matrix Inverse</button>
+
+        <div id="output" class="output"></div>
+        <div class="video-container">
+            <video width="560" height="315" controls >
+                <source src="Gauss.mp4" type="video/mp4" >
+            </video>
+        </div>
+
+        <div class="tutorial-link">
+            <a href="https://www.youtube.com/watch?v=eYSASx8_nyg" target="_blank">Direct link to original tutorial</a>
+        </div>
+    </div>
+
+    <script>
+       function performGaussianElimination() {
+            alert("Performing Gaussian Elimination Calculation.");
+            var n = parseInt(prompt("Enter the number of equations (n):"));
+            var coefficients = [];
+            
+            for (var i = 0; i < n; i++) {
+                var equation = [];
+                for (var j = 0; j < n + 1; j++) {
+                    equation.push(parseFloat(prompt("Enter the coefficient for equation " + (i + 1) +
+                        ", variable " + (j + 1) + ":")));
+                }
+                coefficients.push(equation);
+            }
+            
+            var result = gaussianElimination(coefficients);
+            var output = "Solution:<br>";
+            
+            for (var i = 0; i < n; i++) {
+                output += "x" + (i + 1) + " = " + result[i] + "<br>";
+            }
+            
+            document.getElementById("output").innerHTML = output;
+        }
+
+        function performMatrixInverse() {
+            alert("Performing Matrix Inverse Calculation.");
+            var n = parseInt(prompt("Enter the size of the square matrix (n):"));
+            var matrix = [];
+            
+            for (var i = 0; i < n; i++) {
+                var row = [];
+                for (var j = 0; j < n; j++) {
+                    row.push(parseFloat(prompt("Enter the element at row " + (i + 1) +
+                        ", column " + (j + 1) + ":")));
+                }
+                matrix.push(row);
+            }
+            
+            var result = findInverse(matrix);
+            var output = "Inverse Matrix:<br>";
+            
+            for (var i = 0; i < n; i++) {
+                for (var j = 0; j < n; j++) {
+                    output += result[i][j] + "\t";
+                }
+                output += "<br>";
+            }
+            
+            document.getElementById("output").innerHTML = output;
+        }
+
+        function gaussianElimination(coefficients) {
+            var n = coefficients.length;
+            var result = [];
+
+            // Forward elimination
+            for (var i = 0; i < n; i++) {
+                // Find the maximum pivot
+                var maxIndex = i;
+                var maxValue = coefficients[i][i];
+
+                for (var j = i + 1; j < n; j++) {
+                    if (Math.abs(coefficients[j][i]) > Math.abs(maxValue)) {
+                        maxIndex = j;
+                        maxValue = coefficients[j][i];
+                    }
+                }
+
+                // Swap rows if necessary
+                if (maxIndex !== i) {
+                    var temp = coefficients[i];
+                    coefficients[i] = coefficients[maxIndex];
+                    coefficients[maxIndex] = temp;
+                }
+
+                // Perform elimination
+                for (var j = i + 1; j < n; j++) {
+                    var factor = coefficients[j][i] / coefficients[i][i];
+                    for (var k = i; k < n + 1; k++) {
+                        coefficients[j][k] -= factor * coefficients[i][k];
+                    }
+                }
+            }
+
+            // Backward substitution
+            for (var i = n - 1; i >= 0; i--) {
+                var sum = 0.0;
+                for (var j = i + 1; j < n; j++) {
+                    sum += coefficients[i][j] * result[j];
+                }
+                result[i] = (coefficients[i][n] - sum) / coefficients[i][i];
+            }
+
+            return result;
+        }
+
+        function findInverse(matrix) {
+            var n = matrix.length;
+            var augmentedMatrix = [];
+
+            // Create an augmented matrix [matrix | identity matrix]
+            for (var i = 0; i < n; i++) {
+                var row = [];
+                for (var j = 0; j < n; j++) {
+                    row.push(matrix[i][j]);
+                }
+                for (var j = 0; j < n; j++) {
+                    row.push(i === j ? 1.0 : 0.0);
+                }
+                augmentedMatrix.push(row);
+            }
+
+            // Apply Gauss-Jordan elimination
+            for (var i = 0; i < n; i++) {
+                // Find the maximum pivot
+                var maxIndex = i;
+                var maxValue = augmentedMatrix[i][i];
+
+                for (var j = i + 1; j < n; j++) {
+                    if (Math.abs(augmentedMatrix[j][i]) > Math.abs(maxValue)) {
+                        maxIndex = j;
+                        maxValue = augmentedMatrix[j][i];
+                    }
+                }
+
+                // Swap rows if necessary
+                if (maxIndex !== i) {
+                    var temp = augmentedMatrix[i];
+                    augmentedMatrix[i] = augmentedMatrix[maxIndex];
+                    augmentedMatrix[maxIndex] = temp;
+                }
+
+                // Perform elimination
+                var pivot = augmentedMatrix[i][i];
+                for (var j = 0; j < 2 * n; j++) {
+                    augmentedMatrix[i][j] /= pivot;
+                }
+
+                for (var j = 0; j < n; j++) {
+                    if (j !== i) {
+                        var factor = augmentedMatrix[j][i];
+                        for (var k = 0; k < 2 * n; k++) {
+                            augmentedMatrix[j][k] -= factor * augmentedMatrix[i][k];
+                        }
+                    }
+                }
+            }
+
+            // Extract the inverse matrix
+            var inverseMatrix = [];
+            for (var i = 0; i < n; i++) {
+                var row = [];
+                for (var j = n; j < 2 * n; j++) {
+                    row.push(augmentedMatrix[i][j]);
+                }
+                inverseMatrix.push(row);
+            }
+
+            return inverseMatrix;
+        }
+    </script>
+
+<audio controls>
+    <source src="all.mp3" type="audio/mpeg">
+  Your browser does not support the audio element.
+  </audio>
+  
+</body>
+</html>
